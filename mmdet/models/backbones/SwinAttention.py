@@ -349,9 +349,9 @@ class SwinBlockSequence(BaseModule):
             return x, hw_shape, x, hw_shape
 
 
-class CBAM(BaseModule):
+class DCSM(BaseModule):
     def __init__(self, channel, reduction=16, spatial_kernel=7):
-        super(CBAM, self).__init__()
+        super(DCSM, self).__init__()
         self.max_pool = nn.AdaptiveMaxPool2d(1)
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
 
@@ -501,9 +501,9 @@ class SwinAttention(BaseModule):
             layer_name = f'norm{i}'
             self.add_module(layer_name, layer)
 
-        self.cbams = nn.ModuleList()
+        self.dcsms = nn.ModuleList()
         for num_feature in self.num_features:
-            self.cbams.append(CBAM(num_feature))
+            self.dcsms.append(DCSM(num_feature))
 
     def train(self, mode=True):
         """Convert the model into training mode while keep layers freezed."""
@@ -622,7 +622,7 @@ class SwinAttention(BaseModule):
                 out = norm_layer(out)
                 out = out.view(-1, *out_hw_shape, self.num_features[i]).permute(0, 3, 1, 2).contiguous()
 
-                out = self.cbams[i](out)
+                out = self.dcsms[i](out)
 
                 outs.append(out)
 
